@@ -9,6 +9,7 @@ public class Launcher {
 		Clients clients = new Clients();
 		
 		Client c1 = new Client(clients,"Julie","Rue du Moulin");
+		
 		System.out.println("Client sans order, appel de hasOrder: " + c1.hasOrder());
 		
 		Order o1 = new Order(orders,c1,0,100.0);
