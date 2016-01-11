@@ -12,7 +12,7 @@ public aspect AClientOrder {
 	
 	pointcut printOrder() : execution (public void Order.printOrder());
 	
-	public Order.new(int id, double amount,Client client) {
+	public Order.new(Client client,int id, double amount) {
 		this(id,amount);
 		this.client = client;
 	}
@@ -22,9 +22,12 @@ public aspect AClientOrder {
 	 * @param client new client
 	 */
 	public boolean Order.setClient(Client client) {
-		boolean a = this.getClient().delOrder(this);
+		boolean first = true;
+		if (this.getClient() != null) {
+			first = this.getClient().delOrder(this);
+		}
 		this.client = client;
-		return client.addOrder(this) && a;
+		return client.addOrder(this) && first;
 	}
 	
 	public Client Order.getClient() {
@@ -34,7 +37,7 @@ public aspect AClientOrder {
 	void around() : printOrder() {
 		proceed();
 		System.out.println(" ");
-		System.out.println((Order)(thisJoinPoint.getThis()).getClient().getName());
+		System.out.println(((Order)(thisJoinPoint.getThis())).getClient().getName());
 	}
 	
 	
@@ -45,7 +48,7 @@ public aspect AClientOrder {
 		return this.orders;
 	}
 	/**
-	 * This method add an order for this client. This order must to be on Orders /!\
+	 * This method add an order for this client. /!\ This order must to be on Orders /!\
 	 * @param order
 	 * @return
 	 */
@@ -53,17 +56,17 @@ public aspect AClientOrder {
 		if (order.getOrders().containsOrder(order)) {
 			return false;
 		} else {
-			// order.setClient(this) will do this.setOrder(order)
+			// order.setClient(client) will do client.addOrder(order)
 			return order.setClient(this);
 		}
 	}
 	/**
-	 * Delete the order for this client. The order is automatically deleted on Orders
+	 * Delete the order for this client. /!\ Doesn't remove the Order on Orders /!\
 	 * @param order
 	 * @return
 	 */
 	public boolean Client.delOrder(Order order) {
-		return this.orders.remove(order) && order.getOrders().delOrder(order);
+		return this.orders.remove(order);
 	}
 	
 	public boolean Client.hasOrder() {
